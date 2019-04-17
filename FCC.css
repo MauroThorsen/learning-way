@@ -1,0 +1,89 @@
+header {
+  z-index: 10;
+}
+
+header nav {
+  background: #3a1a3b;
+}
+
+header nav a {
+  font-weight: 500;
+  font-size: 35px;
+  text-decoration: none;
+}
+
+header nav a:hover {
+  color: #1f472d;
+}
+
+header nav img {
+  width: 120px;
+  height: 50px;
+  margin-top: 5px;
+}
+
+main {
+  z-index: -1;
+  margin-left: auto;
+  margin-right: auto;
+  background: #828282;
+}
+
+.about {
+  text-align: right;
+  background: #c8c8c8;
+  font-size: 30px;
+  font-weight: 200;
+}
+
+.about hr {
+  border: 2px solid #828282;
+}
+
+.about img {
+  width: 240px;
+  height: 200px;
+  margin-top: 90px;
+  margin-right: 20px;
+}
+
+.about h2 {
+  text-align: right;
+}
+
+.portfolio,
+.contant {
+  background: #c8c8c8;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.portfolio h1,
+.contant h1 {
+  text-transform: uppercase;
+  text-align: center;
+  font-weight: 600;
+  font-size: 45px;
+}
+
+.portfolio hr,
+.contant hr {
+  border: 2px solid #828282;
+}
+
+.portfolio section,
+.contant section {
+  text-align: left;
+}
+
+footer .message {
+  background: #3a1a3b;
+  width: 100%;
+  height: 30px;
+  font-weight: 100;
+  font-size: 20px;
+  text-align: center;
+  margin-top: 3px;
+  color: #a1a1a1;
+}
+/*# sourceMappingURL=121.css.map */
