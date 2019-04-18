@@ -197,6 +197,136 @@ Person.prototype={
 整理一下，这里一共牵扯了原型，构造器（函数），实例三者，三者到底怎么组织在一起的？
 首先构造器：他只有一个属性：prototype指向原型；
 原型：有基本属性（age,name,job...）,还有一个重要属性construct，指向构造器；
-实例：可能有自由属性（重写属性实现属性实例化），其与原型属于同一作用域链（在编译原理中具体讨论）可以很简单的理解为实例是被嵌套在原型内部，也就是说实例与构造器没有直接联系。
+实例：可能有自由属性（重写属性实现属性实例化），其与原型属于同一原型链（在继承中具体讨论）可以很简单的理解为实例是被嵌套在原型内部，也就是说实例与构造器没有直接联系。
 到此，算是比较清晰地分析了原型模式，之前说过，不存在没有问题的模式，而原型模式的缺点就是他的优点——共享，只要我通过某种手段让实例去改变原型，那么这一整个原型下的实例都会被影响。
-(5)
+(5)最少在我看来上述问题已经属于强行找问题了，换句话说，一眼就能看出的问题已经基本没有了。但是还存在一些习惯问题，就例如上个问题：
+######组合使用构造函数和原型：
+```js
+function Person(name,age,job){
+    this.name=name;
+    this.age=age;
+    this.job=job;
+}
+Person.prototype={
+    constructor:Person,
+    sayHello:function(){
+        console.log(this.name);
+    }
+}
+```
+就很直接地把共享属性和自有属性分开。但是有个问题，你的代码给别人看的时候很有可能别人看不懂：
+```C++
+class Student{
+public:
+    //成员变量
+    char *name;
+    int age;
+    float score;
+    //成员函数
+    void say(){
+        cout<<name<<"的年龄是"<<age<<"，成"<<score<<endl;
+    }
+};
+```
+```Java
+public class Student {
+
+    private int id;
+
+    public Student(Integer id) {
+        this.id = id;
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        Constructor<Student> constructor = Student.class.getConstructor(Integer.class);
+        Student stu3 = constructor.newInstance(123);
+    }
+}
+```
+这分别是C++和Java的定义对象，是不是觉得很不一样？
+######动态原型模式
+```js
+function Person(name,job,age){
+    this.name=name;
+    this.job=job;
+    this.age=age;
+    if(typeof this.sayHello!="function"){
+        Person.prototype.sayName=function(){
+            console.log("hello");
+        };
+    }
+}
+```
+这种模式就是针对原型模式的缺点进而优化原型模式，使用判断来避免二次定义
+######稳妥构造函数模式
+我们的最初目的是什么？新建对象。那怎样是最方便且问题最少的做法？直接拿别人现成的。
+```js
+function Person(name,job,age){
+    let o=new Object();
+    //定义私有变量
+    let _name=name;
+    let _age=age;
+    let _job=job;
+    //共有变量
+    o.type="school";
+    //定义特权函数用于访问私有变量
+    o.sayHello=function(){
+        return "hello I'm"+name;
+    }
+    return o;
+}
+var person1=new Person("wkq","stduent",21);
+console.log(person1.sayHello());//hello I'mwkq
+console.log(person1._name);//undefined
+console.log("_name" in person1);//false
+console.log(person1.type);//school
+person1.getName = function () {
+    if(this._name=="wkq")//如果可以获取私有变量则进行修改
+        this._name="weiao";
+    return this._name;
+};
+console.log(person1.getName());//undefined
+```
+自此，算是得到了一种与其他语言最为类似的模式，成员变量，方法，私有，公有都做到了，其语法格式也相对类似。
+####继承
+子类获得父类的方法与属性，很明显有很多投机取巧的办法做到类似的效果，于是就有instanceof方法用于检测是不是投机取巧：
+```js
+ function foo() {
+            this.s=2;
+            this.e=3;
+        }
+        var a=new foo();
+        var i=Object.create(a,{
+            b:{
+                value:1
+            }
+        });
+        console.log(i.s);//2
+        console.log(i instanceof foo);//true
+```
+其作用是检测一个**对象或其父类**是否由一个**构造函数**所创建的。简单地，我可以直接将父类构造函数在子类里再调用一遍，其效果是很相似的。继承是为了避免重复定义以造成资源浪费，但这种实现和继承的本意背道而驰。
+值得说明的是instanceof的左右操作数，一定是对象和构造函数。
+######原型链
+这个简单，就是从顶：Object向下将所有的对象变成一个双向链表，头指针是Object，所有的对象都是链表上的节点，其前驱是他的原型，其后继是子类，所有的对象都可以沿着链表向前遍历方法和变量，虽然是双向链表，但是**禁止**向后遍历。
+######继承的实现
+根据上面的分析，继承的实现就转化为了新建链表节点。好，我们首先根据我们的习惯，有头插法和尾插法，然后再排除头插法（原型链的特性），就只有尾插法一种,也就是上面的示例，当然还有一种：
+```js
+function foo(){
+    S:2
+}
+function fun(){
+    Q:2
+}
+fun.prototype=new foo();
+var s=new fun();
+```
+这里创建的s就是foo构造函数对应对象的子类实例，是不是和链表操作很像：
+```c
+List *H,p;
+p=H=(List*)malloc(sizeof(List));
+H->next=p;
+//H.data=foo()=fun().prototype;
+//p.data=fun();
+```
+当然也有其他实现的方法，但是在我看来其他方法就属于投机取巧的方式，其就是直接在子类直接调用超类的构造函数的call方法。
